@@ -37,6 +37,7 @@ class CustomT5Config(T5Config):
         
         self.ctc_loss_reduction = ctc_loss_reduction
         self.ctc_zero_infinity = ctc_zero_infinity
+        self.architectures = kwargs.pop("architectures")
 
         super().__init__(**kwargs)
 
