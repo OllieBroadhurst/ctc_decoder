@@ -256,6 +256,8 @@ class T5ForCTCDecoding(T5PreTrainedModel):
             # ctc_loss doesn't support fp16
             log_probs = nn.functional.log_softmax(ctc_logits, dim=-1, dtype=torch.float32).transpose(0, 1)
 
+            print(log_probs.shape, flattened_targets, input_lengths, target_lengths)
+
             with torch.backends.cudnn.flags(enabled=False):
                 ctc_loss = nn.functional.ctc_loss(
                     log_probs,
