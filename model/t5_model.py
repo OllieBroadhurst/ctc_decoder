@@ -32,8 +32,9 @@ class CustomOutput(Seq2SeqLMOutput):
 class CustomT5Config(T5Config):
     def __init__(self, 
         ctc_loss_reduction="mean",
-        ctc_zero_infinity=True):
-        super().__init__()
+        ctc_zero_infinity=True,
+        **kwargs):
+        super().__init__(**kwargs)
 
         self.ctc_loss_reduction = ctc_loss_reduction
         self.ctc_zero_infinity = ctc_zero_infinity
@@ -248,6 +249,10 @@ class T5ForCTCDecoding(T5PreTrainedModel):
 
             if ctc_labels.max() >= self.config.vocab_size:
                     raise ValueError(f"Label values must be <= vocab_size: {self.config.vocab_size}")
+
+            attention_mask = (
+                attention_mask if attention_mask is not None else torch.ones_like(input_ids, dtype=torch.long)
+            )
 
             input_lengths = attention_mask.sum(-1)
 
