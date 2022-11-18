@@ -60,7 +60,7 @@ class T5ForCTCDecoding(T5PreTrainedModel):
 
         self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
         self.pieces_2_chars = nn.Linear(config.d_model, config.max_chars_per_word, bias=False)
-        self.ctc_head = nn.Linear(config.max_chars_per_word, config.ctc_vocab_size, bias=False)
+        self.ctc_head = nn.Linear(config.d_model, config.ctc_vocab_size, bias=False)
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -204,6 +204,8 @@ class T5ForCTCDecoding(T5PreTrainedModel):
             if decoder_attention_mask is not None:
                 decoder_attention_mask = decoder_attention_mask.to(self.decoder.first_device)
 
+        
+
         # Decode
         decoder_outputs = self.decoder(
             input_ids=decoder_input_ids,
@@ -234,8 +236,7 @@ class T5ForCTCDecoding(T5PreTrainedModel):
             sequence_output = sequence_output * (self.model_dim**-0.5)
 
         lm_logits = self.lm_head(sequence_output)
-        char_split = self.pieces_2_chars(sequence_output)
-        ctc_logits = self.ctc_head(char_split)
+        ctc_logits = self.ctc_head(hidden_states)
 
         loss, cls_loss, ctc_loss = None, None, None
         if labels is not None:
@@ -283,8 +284,8 @@ class T5ForCTCDecoding(T5PreTrainedModel):
 
         return CustomOutput(
             loss=loss,
-            logits=ctc_logits,
-            cls_logits=lm_logits,
+            logits=lm_logits,
+            ctc_logits=ctc_logits,
             ctc_loss=ctc_loss,
             cls_loss=cls_loss,
             past_key_values=decoder_outputs.past_key_values,
