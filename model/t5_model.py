@@ -59,7 +59,8 @@ class T5ForCTCDecoding(T5PreTrainedModel):
         self.decoder = T5Stack(decoder_config, self.shared)
 
         self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
-        self.ctc_head = nn.Linear(config.d_model, config.ctc_vocab_size, bias=False)
+        self.pieces_2_chars = nn.Linear(config.d_model, config.max_chars_per_word, bias=False)
+        self.ctc_head = nn.Linear(config.max_chars_per_word, config.ctc_vocab_size, bias=False)
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -233,9 +234,10 @@ class T5ForCTCDecoding(T5PreTrainedModel):
             sequence_output = sequence_output * (self.model_dim**-0.5)
 
         lm_logits = self.lm_head(sequence_output)
-        ctc_logits = self.ctc_head(sequence_output)
+        char_split = self.pieces_2_chars(sequence_output)
+        ctc_logits = self.ctc_head(char_split)
 
-        loss, ctc_loss, ctc_loss = None, None, None
+        loss, cls_loss, ctc_loss = None, None, None
         if labels is not None:
 
             if ctc_labels.max() >= self.config.ctc_vocab_size:
