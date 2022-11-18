@@ -50,7 +50,6 @@ class CustomT5Config(PretrainedConfig):
         self,
         vocab_size=32128,
         ctc_vocab_size=32,
-        max_chars_per_word=40,
         d_model=512,
         d_kv=64,
         d_ff=2048,
@@ -90,7 +89,6 @@ class CustomT5Config(PretrainedConfig):
 
         self.ctc_loss_reduction = ctc_loss_reduction
         self.ctc_zero_infinity = ctc_zero_infinity
-        self.max_chars_per_word = max_chars_per_word
         self.ctc_vocab_size = ctc_vocab_size
 
         act_info = self.feed_forward_proj.split("-")

@@ -59,7 +59,6 @@ class T5ForCTCDecoding(T5PreTrainedModel):
         self.decoder = T5Stack(decoder_config, self.shared)
 
         self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
-        self.pieces_2_chars = nn.Linear(config.d_model, config.max_chars_per_word, bias=False)
         self.ctc_head = nn.Linear(config.d_model, config.ctc_vocab_size, bias=False)
 
         # Initialize weights and apply final processing
