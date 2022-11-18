@@ -283,7 +283,7 @@ class T5ForCTCDecoding(T5PreTrainedModel):
 
         return CustomOutput(
             loss=loss,
-            logits=lm_logits,
+            logits=ctc_logits,
             cls_logits=lm_logits,
             ctc_loss=ctc_loss,
             cls_loss=cls_loss,
