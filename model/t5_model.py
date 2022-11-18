@@ -38,7 +38,7 @@ class CustomT5Config(T5Config):
         self.ctc_loss_reduction = ctc_loss_reduction
         self.ctc_zero_infinity = ctc_zero_infinity
 
-        super(CustomT5Config).__init__(**kwargs)
+        super(CustomT5Config, self).__init__(**kwargs)
 
 class T5ForCTCDecoding(T5PreTrainedModel):
     _keys_to_ignore_on_load_missing = [
