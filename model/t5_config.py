@@ -49,6 +49,7 @@ class CustomT5Config(PretrainedConfig):
     def __init__(
         self,
         vocab_size=32128,
+        ctc_vocab_size=32,
         d_model=512,
         d_kv=64,
         d_ff=2048,
@@ -88,6 +89,7 @@ class CustomT5Config(PretrainedConfig):
 
         self.ctc_loss_reduction = ctc_loss_reduction
         self.ctc_zero_infinity = ctc_zero_infinity
+        self.ctc_vocab_size = ctc_vocab_size
 
         act_info = self.feed_forward_proj.split("-")
         self.dense_act_fn = act_info[-1]
