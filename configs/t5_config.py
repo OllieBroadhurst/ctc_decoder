@@ -1,6 +1,6 @@
 from transformers.configuration_utils import PretrainedConfig
 
-class T5Config(PretrainedConfig):
+class CustomT5Config(PretrainedConfig):
     r"""
     This is the configuration class to store the configuration of a [`T5Model`] or a [`TFT5Model`]. It is used to
     instantiate a T5 model according to the specified arguments, defining the model architecture. Instantiating a
