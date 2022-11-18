@@ -2,13 +2,13 @@ import copy
 import warnings
 from typing import Optional, Tuple, Union
 from dataclasses import dataclass
-import logging
 
 import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss
 
 from transformers import T5PreTrainedModel, T5Config
+from transformers.utils import logging
 from transformers.models.t5.modeling_t5 import T5Stack
 from transformers.utils.model_parallel_utils import assert_device_map, get_device_map
 from transformers.modeling_outputs import Seq2SeqLMOutput, BaseModelOutput
