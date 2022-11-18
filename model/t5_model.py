@@ -59,7 +59,7 @@ class T5ForCTCDecoding(T5PreTrainedModel):
         self.decoder = T5Stack(decoder_config, self.shared)
 
         self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
-        self.ctc_head = nn.Linear(config.d_model, 32, bias=False)
+        self.ctc_head = nn.Linear(config.d_model, config.ctc_vocab_size, bias=False)
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -235,11 +235,11 @@ class T5ForCTCDecoding(T5PreTrainedModel):
         lm_logits = self.lm_head(sequence_output)
         ctc_logits = self.ctc_head(sequence_output)
 
-        loss = None
+        loss, ctc_loss, ctc_loss = None, None, None
         if labels is not None:
 
-            if ctc_labels.max() >= self.config.vocab_size:
-                    raise ValueError(f"Label values must be <= vocab_size: {self.config.vocab_size}")
+            if ctc_labels.max() >= self.config.ctc_vocab_size:
+                    raise ValueError(f"Label values must be <= vocab_size: {self.config.ctc_vocab_size}")
 
             attention_mask = (
                 attention_mask if attention_mask is not None else torch.ones_like(input_ids, dtype=torch.long)
@@ -271,7 +271,7 @@ class T5ForCTCDecoding(T5PreTrainedModel):
             cls_loss = loss_fct(lm_logits.view(-1, lm_logits.size(-1)), labels.view(-1))
             # TODO(thom): Add z_loss https://github.com/tensorflow/mesh/blob/fa19d69eafc9a482aff0b59ddd96b025c0cb207d/mesh_tensorflow/layers.py#L666
 
-            loss = ctc_loss + cls_loss
+            loss = ctc_loss + cls_loss       
 
         if not return_dict:
             output = (lm_logits,) + decoder_outputs[1:] + encoder_outputs
