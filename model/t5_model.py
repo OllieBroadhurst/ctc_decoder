@@ -7,7 +7,7 @@ import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss
 
-from .configs.t5_config import CustomT5Config
+from ..configs.t5_config import CustomT5Config
 
 from transformers.utils import logging
 from transformers.models.t5.modeling_t5 import T5Stack, T5PreTrainedModel
