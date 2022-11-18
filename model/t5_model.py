@@ -25,7 +25,7 @@ logger = logging.get_logger(__name__)
 
 @dataclass
 class CustomOutput(Seq2SeqLMOutput):
-    cls_logits: Optional[Tuple[torch.FloatTensor]] = None
+    ctc_logits: Optional[Tuple[torch.FloatTensor]] = None
     ctc_loss: Optional[Tuple[torch.FloatTensor]] = None
     cls_loss: Optional[Tuple[torch.FloatTensor]] = None
 
@@ -203,8 +203,6 @@ class T5ForCTCDecoding(T5PreTrainedModel):
                 attention_mask = attention_mask.to(self.decoder.first_device)
             if decoder_attention_mask is not None:
                 decoder_attention_mask = decoder_attention_mask.to(self.decoder.first_device)
-
-        
 
         # Decode
         decoder_outputs = self.decoder(
