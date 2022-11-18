@@ -7,10 +7,10 @@ import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss
 
-from transformers import T5PreTrainedModel, T5Config
-from transformers.configuration_utils import PretrainedConfig
+from .configs.t5_config import CustomT5Config
+
 from transformers.utils import logging
-from transformers.models.t5.modeling_t5 import T5Stack
+from transformers.models.t5.modeling_t5 import T5Stack, T5PreTrainedModel
 from transformers.utils.model_parallel_utils import assert_device_map, get_device_map
 from transformers.modeling_outputs import Seq2SeqLMOutput, BaseModelOutput
 
@@ -29,17 +29,6 @@ class CustomOutput(Seq2SeqLMOutput):
     ctc_loss: Optional[Tuple[torch.FloatTensor]] = None
     cls_loss: Optional[Tuple[torch.FloatTensor]] = None
 
-
-class CustomT5Config(T5Config, PretrainedConfig):
-    def __init__(self, 
-        ctc_loss_reduction="mean",
-        ctc_zero_infinity=True,
-        **kwargs):
-        
-        self.ctc_loss_reduction = ctc_loss_reduction
-        self.ctc_zero_infinity = ctc_zero_infinity
-
-        super().__init__(**kwargs)
 
 class T5ForCTCDecoding(T5PreTrainedModel):
     _keys_to_ignore_on_load_missing = [
