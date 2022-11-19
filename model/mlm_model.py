@@ -66,7 +66,7 @@ class BertForCTCDecoding(BertPreTrainedModel):
 
         self.bert = BertModel(config, add_pooling_layer=False)
         self.ctc = nn.Linear(config.hidden_size, config.ctc_vocab_size)
-        self.cls = BertOnlyMLMHead(config)
+        self.cls = BertOnlyCTCMLMHead(config)
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -119,7 +119,7 @@ class BertForCTCDecoding(BertPreTrainedModel):
         sequence_output = outputs[0]
 
         ctc_logits = self.ctc(sequence_output)
-        print(ctc_logits.shape)
+        
         prediction_scores = self.cls(ctc_logits)
 
         loss, masked_lm_loss, ctc_loss = None, None, None
