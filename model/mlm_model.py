@@ -8,8 +8,8 @@ from torch import nn
 from torch.nn import CrossEntropyLoss
 
 from transformers.utils import logging
-from transformers.models.bert.modeling_bert import BertPreTrainedModel, BertModel, BertOnlyMLMHead, BertPredictionHeadTransform
-
+from transformers.models.bert.modeling_bert import BertPreTrainedModel, BertModel
+from transformers.activations import ACT2FN
 from transformers.modeling_outputs import MaskedLMOutput
 
 
@@ -22,10 +22,27 @@ class CustomOutput(MaskedLMOutput):
     cls_loss: Optional[Tuple[torch.FloatTensor]] = None
 
 
+class BertCTCPredictionHeadTransform(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.dense = nn.Linear(config.ctc_vocab_size, config.hidden_size)
+        if isinstance(config.hidden_act, str):
+            self.transform_act_fn = ACT2FN[config.hidden_act]
+        else:
+            self.transform_act_fn = config.hidden_act
+        self.LayerNorm = nn.LayerNorm(config.ctc_vocab_size, eps=config.layer_norm_eps)
+
+    def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        hidden_states = self.dense(hidden_states)
+        hidden_states = self.transform_act_fn(hidden_states)
+        hidden_states = self.LayerNorm(hidden_states)
+        return hidden_states
+        
+
 class BertCTCLMPredictionHead(nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.transform = BertPredictionHeadTransform(config)
+        self.transform = BertCTCPredictionHeadTransform(config)
 
         # The output weights are the same as the input embeddings, but there is
         # an output-only bias for each token.
