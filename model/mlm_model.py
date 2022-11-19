@@ -119,9 +119,9 @@ class BertForCTCDecoding(BertPreTrainedModel):
         sequence_output = outputs[0]
 
         ctc_logits = self.ctc(sequence_output)
-        prediction_scores = self.cls(sequence_output)
+        prediction_scores = self.cls(ctc_logits)
 
-        masked_lm_loss, ctc_loss = None, None
+        loss, masked_lm_loss, ctc_loss = None, None, None
 
         if labels is not None:
 
