@@ -79,7 +79,7 @@ class BertConfig(PretrainedConfig):
         use_cache=True,
         classifier_dropout=None,
         ctc_loss_reduction="mean",
-        ctc_zero_infinity=True
+        ctc_zero_infinity=True,
         **kwargs
     ):
         super().__init__(pad_token_id=pad_token_id, **kwargs)
