@@ -21,7 +21,7 @@ class DistilBertForMaskedLM(DistilBertPreTrainedModel):
         self.distilbert = DistilBertModel(config)
         self.vocab_transform = nn.Linear(config.dim, config.dim)
         self.vocab_layer_norm = nn.LayerNorm(config.dim, eps=1e-12)
-        self.vocab_projector = nn.Linear(config.dim, config.vocab_size)
+        self.vocab_projector = nn.Linear(config.dim, config.decoder_vocab_size)
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -92,8 +92,8 @@ class DistilBertForMaskedLM(DistilBertPreTrainedModel):
 
         if labels is not None:
 
-            if labels.max() >= self.config.vocab_size:
-                    raise ValueError(f"Label values must be <= vocab_size: {self.config.ctc_vocab_size}")
+            if labels.max() >= self.config.decoder_vocab_size:
+                    raise ValueError(f"Label values must be <= vocab_size: {self.config.decoder_vocab_size}")
 
             attention_mask = (
                 attention_mask if attention_mask is not None else torch.ones_like(input_ids, dtype=torch.long)

@@ -1,6 +1,6 @@
 from transformers.configuration_utils import PretrainedConfig
 
-class BertConfig(PretrainedConfig):
+class CTCDecoderConfig(PretrainedConfig):
     r"""
     This is the configuration class to store the configuration of a [`BertModel`] or a [`TFBertModel`]. It is used to
     instantiate a BERT model according to the specified arguments, defining the model architecture. Instantiating a
@@ -61,8 +61,8 @@ class BertConfig(PretrainedConfig):
 
     def __init__(
         self,
-        vocab_size=30522,
-        ctc_vocab_size=32,
+        vocab_size=32,
+        decoder_vocab_size=30522,
         hidden_size=768,
         num_hidden_layers=12,
         num_attention_heads=12,
@@ -85,7 +85,7 @@ class BertConfig(PretrainedConfig):
         super().__init__(pad_token_id=pad_token_id, **kwargs)
 
         self.vocab_size = vocab_size
-        self.ctc_vocab_size = ctc_vocab_size
+        self.decoder_vocab_size = decoder_vocab_size
         self.hidden_size = hidden_size
         self.num_hidden_layers = num_hidden_layers
         self.num_attention_heads = num_attention_heads
