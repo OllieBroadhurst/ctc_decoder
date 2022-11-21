@@ -12,7 +12,7 @@ from transformers.modeling_outputs import MaskedLMOutput
 
 logger = logging.get_logger(__name__)
 
-class DistilBertForMaskedLM(DistilBertPreTrainedModel):
+class DistilBertForCTCDecoding(DistilBertPreTrainedModel):
     def __init__(self, config: PretrainedConfig):
         super().__init__(config)
 
