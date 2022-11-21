@@ -6,6 +6,7 @@ from torch import nn
 from transformers import DistilBertModel, PretrainedConfig
 from transformers.utils import logging
 from transformers.models.distilbert.modeling_distilbert import DistilBertPreTrainedModel
+from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2Adapter
 from transformers.activations import get_activation
 from transformers.modeling_outputs import MaskedLMOutput
 
@@ -19,6 +20,9 @@ class DistilBertForCTCDecoding(DistilBertPreTrainedModel):
         self.activation = get_activation(config.activation)
 
         self.distilbert = DistilBertModel(config)
+
+        self.adapter = Wav2Vec2Adapter(config)
+
         self.vocab_transform = nn.Linear(config.dim, config.dim)
         self.vocab_layer_norm = nn.LayerNorm(config.dim, eps=1e-12)
         self.vocab_projector = nn.Linear(config.dim, config.decoder_vocab_size)
@@ -100,6 +104,9 @@ class DistilBertForCTCDecoding(DistilBertPreTrainedModel):
             )
 
             input_lengths = attention_mask.sum(-1)
+
+            for _ in range(self.config.num_adapter_layers):
+                torch.div(input_lengths - 1, self.config.adapter_stride, rounding_mode="floor") + 1
 
             # assuming that padded tokens are filled with -100
             # when not being attended to
