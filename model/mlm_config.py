@@ -78,7 +78,7 @@ class CTCDecoderConfig(PretrainedConfig):
         **kwargs
     ):
         self.vocab_size = vocab_size
-        self.decoder_vocab_size = decoder_vocab_size,
+        self.decoder_vocab_size = decoder_vocab_size
         self.max_position_embeddings = max_position_embeddings
         self.sinusoidal_pos_embds = sinusoidal_pos_embds
         self.n_layers = n_layers
