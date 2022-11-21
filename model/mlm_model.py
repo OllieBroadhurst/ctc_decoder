@@ -23,9 +23,9 @@ class DistilBertForCTCDecoding(DistilBertPreTrainedModel):
 
         self.adapter = Wav2Vec2Adapter(config)
 
-        self.vocab_transform = nn.Linear(config.dim, config.dim)
-        self.vocab_layer_norm = nn.LayerNorm(config.dim, eps=1e-12)
-        self.vocab_projector = nn.Linear(config.dim, config.decoder_vocab_size)
+        self.vocab_transform = nn.Linear(config.output_hidden_size, config.output_hidden_size)
+        self.vocab_layer_norm = nn.LayerNorm(config.output_hidden_size, eps=1e-12)
+        self.vocab_projector = nn.Linear(config.output_hidden_size, config.decoder_vocab_size)
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -87,7 +87,10 @@ class DistilBertForCTCDecoding(DistilBertPreTrainedModel):
             return_dict=return_dict,
         )
         hidden_states = dlbrt_output[0]  # (bs, seq_length, dim)
-        prediction_logits = self.vocab_transform(hidden_states)  # (bs, seq_length, dim)
+
+        down_proj = self.adapter(hidden_states)
+
+        prediction_logits = self.vocab_transform(down_proj)  # (bs, seq_length, dim)
         prediction_logits = self.activation(prediction_logits)  # (bs, seq_length, dim)
         prediction_logits = self.vocab_layer_norm(prediction_logits)  # (bs, seq_length, dim)
         prediction_logits = self.vocab_projector(prediction_logits)  # (bs, seq_length, vocab_size)
