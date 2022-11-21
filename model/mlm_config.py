@@ -76,6 +76,7 @@ class CTCDecoderConfig(PretrainedConfig):
         output_hidden_size=768,
         num_adapter_layers=2,
         adapter_stride=2,
+        adapter_kernel_size=3,
         ctc_loss_reduction="mean",
         ctc_zero_infinity=True,
         **kwargs
@@ -98,6 +99,7 @@ class CTCDecoderConfig(PretrainedConfig):
         self.num_adapter_layers = num_adapter_layers
         self.layerdrop = dropout
         self.adapter_stride = adapter_stride
+        self.adapter_kernel_size = adapter_kernel_size
         self.ctc_loss_reduction = ctc_loss_reduction
         self.ctc_zero_infinity = ctc_zero_infinity
         super().__init__(**kwargs, pad_token_id=pad_token_id)
