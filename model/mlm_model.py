@@ -109,7 +109,7 @@ class DistilBertForCTCDecoding(DistilBertPreTrainedModel):
             input_lengths = attention_mask.sum(-1)
 
             for _ in range(self.config.num_adapter_layers):
-                torch.div(input_lengths - 1, self.config.adapter_stride, rounding_mode="floor") + 1
+                input_lengths = torch.div(input_lengths - 1, self.config.adapter_stride, rounding_mode="floor") + 1
 
             # assuming that padded tokens are filled with -100
             # when not being attended to
