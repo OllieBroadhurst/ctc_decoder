@@ -24,7 +24,7 @@ class DistilBertForCTCDecoding(DistilBertPreTrainedModel):
         self.vocab_projector = nn.Linear(config.dim, config.decoder_vocab_size)
 
         # Initialize weights and apply final processing
-        self.post_init()
+        #self.post_init()
 
         self.mlm_loss_fct = nn.CrossEntropyLoss()
 
