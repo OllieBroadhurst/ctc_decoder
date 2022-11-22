@@ -2,101 +2,114 @@ from typing import Optional, Tuple, Union
 
 import torch
 from torch import nn
+from torch.nn.functional import gelu
 
-from transformers import DistilBertModel, PretrainedConfig
+from transformers import RobertaModel
 from transformers.utils import logging
-from transformers.models.distilbert.modeling_distilbert import DistilBertPreTrainedModel
+from transformers.models.roberta.modeling_roberta import RobertaPreTrainedModel, RobertaLMHead
 from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2Adapter
-from transformers.activations import get_activation
 from transformers.modeling_outputs import MaskedLMOutput
 
 
 logger = logging.get_logger(__name__)
 
-class DistilBertForCTCDecoding(DistilBertPreTrainedModel):
-    def __init__(self, config: PretrainedConfig):
+
+class RobertaCTCLMHead(nn.Module):
+    """Roberta Head for masked language modeling."""
+
+    def __init__(self, config):
+        super().__init__()
+        self.dense = nn.Linear(config.output_hidden_size, config.output_hidden_size)
+        self.layer_norm = nn.LayerNorm(config.output_hidden_size, eps=config.layer_norm_eps)
+
+        self.decoder = nn.Linear(config.output_hidden_size, config.decoder_vocab_size)
+        self.bias = nn.Parameter(torch.zeros(config.decoder_vocab_size))
+        self.decoder.bias = self.bias
+
+    def forward(self, features, **kwargs):
+        x = self.dense(features)
+        x = gelu(x)
+        x = self.layer_norm(x)
+
+        # project back to size of vocabulary with bias
+        x = self.decoder(x)
+
+        return x
+
+class RobertaForMaskedLM(RobertaPreTrainedModel):
+    _keys_to_ignore_on_save = [r"lm_head.decoder.weight", r"lm_head.decoder.bias"]
+    _keys_to_ignore_on_load_missing = [r"position_ids", r"lm_head.decoder.weight", r"lm_head.decoder.bias"]
+    _keys_to_ignore_on_load_unexpected = [r"pooler"]
+
+    def __init__(self, config):
         super().__init__(config)
 
-        self.activation = get_activation(config.activation)
+        if config.is_decoder:
+            logger.warning(
+                "If you want to use `RobertaForMaskedLM` make sure `config.is_decoder=False` for "
+                "bi-directional self-attention."
+            )
 
-        self.distilbert = DistilBertModel(config)
-
+        self.roberta = RobertaModel(config, add_pooling_layer=False)
         self.adapter = Wav2Vec2Adapter(config)
+        self.lm_head = RobertaCTCLMHead(config)
 
-        self.vocab_transform = nn.Linear(config.output_hidden_size, config.output_hidden_size)
-        self.vocab_layer_norm = nn.LayerNorm(config.output_hidden_size, eps=1e-12)
-        self.vocab_projector = nn.Linear(config.output_hidden_size, config.decoder_vocab_size)
+        # The LM head weights require special treatment only when they are tied with the word embeddings
+        self.update_keys_to_ignore(config, ["lm_head.decoder.weight"])
 
         # Initialize weights and apply final processing
         self.post_init()
 
-        self.mlm_loss_fct = nn.CrossEntropyLoss()
+    def get_output_embeddings(self):
+        return self.lm_head.decoder
 
-    def get_position_embeddings(self) -> nn.Embedding:
-        """
-        Returns the position embeddings
-        """
-        return self.distilbert.get_position_embeddings()
-
-    def resize_position_embeddings(self, new_num_position_embeddings: int):
-        """
-        Resizes position embeddings of the model if `new_num_position_embeddings != config.max_position_embeddings`.
-        Arguments:
-            new_num_position_embeddings (`int`):
-                The number of new position embedding matrix. If position embeddings are learned, increasing the size
-                will add newly initialized vectors at the end, whereas reducing the size will remove vectors from the
-                end. If position embeddings are not learned (*e.g.* sinusoidal position embeddings), increasing the
-                size will add correct vectors at the end following the position encoding algorithm, whereas reducing
-                the size will remove vectors from the end.
-        """
-        self.distilbert.resize_position_embeddings(new_num_position_embeddings)
-
-    def get_output_embeddings(self) -> nn.Module:
-        return self.vocab_projector
-
-    def set_output_embeddings(self, new_embeddings: nn.Module):
-        self.vocab_projector = new_embeddings
-
+    def set_output_embeddings(self, new_embeddings):
+        self.lm_head.decoder = new_embeddings
 
     def forward(
         self,
-        input_ids: Optional[torch.Tensor] = None,
-        attention_mask: Optional[torch.Tensor] = None,
-        head_mask: Optional[torch.Tensor] = None,
-        inputs_embeds: Optional[torch.Tensor] = None,
+        input_ids: Optional[torch.LongTensor] = None,
+        attention_mask: Optional[torch.FloatTensor] = None,
+        token_type_ids: Optional[torch.LongTensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        head_mask: Optional[torch.FloatTensor] = None,
+        inputs_embeds: Optional[torch.FloatTensor] = None,
+        encoder_hidden_states: Optional[torch.FloatTensor] = None,
+        encoder_attention_mask: Optional[torch.FloatTensor] = None,
         labels: Optional[torch.LongTensor] = None,
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[MaskedLMOutput, Tuple[torch.Tensor, ...]]:
+    ) -> Union[Tuple[torch.Tensor], MaskedLMOutput]:
         r"""
         labels (`torch.LongTensor` of shape `(batch_size, sequence_length)`, *optional*):
             Labels for computing the masked language modeling loss. Indices should be in `[-100, 0, ...,
             config.vocab_size]` (see `input_ids` docstring) Tokens with indices set to `-100` are ignored (masked), the
-            loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`.
+            loss is only computed for the tokens with labels in `[0, ..., config.vocab_size]`
+        kwargs (`Dict[str, any]`, optional, defaults to *{}*):
+            Used to hide legacy arguments that have been deprecated.
         """
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-        dlbrt_output = self.distilbert(
-            input_ids=input_ids,
+        outputs = self.roberta(
+            input_ids,
             attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            position_ids=position_ids,
             head_mask=head_mask,
             inputs_embeds=inputs_embeds,
+            encoder_hidden_states=encoder_hidden_states,
+            encoder_attention_mask=encoder_attention_mask,
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
-        hidden_states = dlbrt_output[0]  # (bs, seq_length, dim)
+        sequence_output = outputs[0]
 
-        down_proj = self.adapter(hidden_states)
-
-        prediction_logits = self.vocab_transform(down_proj)  # (bs, seq_length, dim)
-        prediction_logits = self.activation(prediction_logits)  # (bs, seq_length, dim)
-        prediction_logits = self.vocab_layer_norm(prediction_logits)  # (bs, seq_length, dim)
-        prediction_logits = self.vocab_projector(prediction_logits)  # (bs, seq_length, vocab_size)
+        down_proj = self.adapter(sequence_output)
+        prediction_scores = self.lm_head(down_proj)
 
         ctc_loss = None
-
         if labels is not None:
 
             if labels.max() >= self.config.decoder_vocab_size:
@@ -118,7 +131,7 @@ class DistilBertForCTCDecoding(DistilBertPreTrainedModel):
             flattened_targets = labels.masked_select(labels_mask)
 
             # ctc_loss doesn't support fp16
-            log_probs = nn.functional.log_softmax(prediction_logits, dim=-1, dtype=torch.float32).transpose(0, 1)
+            log_probs = nn.functional.log_softmax(prediction_scores, dim=-1, dtype=torch.float32).transpose(0, 1)
 
             with torch.backends.cudnn.flags(enabled=False):
                 ctc_loss = nn.functional.ctc_loss(
@@ -132,12 +145,12 @@ class DistilBertForCTCDecoding(DistilBertPreTrainedModel):
                 )
 
         if not return_dict:
-            output = (prediction_logits,) + dlbrt_output[1:]
+            output = (prediction_scores,) + outputs[2:]
             return ((ctc_loss,) + output) if ctc_loss is not None else output
 
         return MaskedLMOutput(
             loss=ctc_loss,
-            logits=prediction_logits,
-            hidden_states=dlbrt_output.hidden_states,
-            attentions=dlbrt_output.attentions,
+            logits=prediction_scores,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions,
         )
