@@ -25,7 +25,8 @@ class CTCDecoderConfig(BertConfig):
     def __init__(self, 
                 pad_token_id=1,
                 bos_token_id=0, 
-                eos_token_id=2,                 
+                eos_token_id=2,
+                layerdrop=0.1,
                 decoder_vocab_size=32,
                 output_hidden_size=None,
                 num_adapter_layers=2,
@@ -35,6 +36,7 @@ class CTCDecoderConfig(BertConfig):
                 ctc_zero_infinity=True,
                 **kwargs):
         """Constructs RobertaConfig."""
+        self.layerdrop = layerdrop
         self.decoder_vocab_size = decoder_vocab_size        
         self.num_adapter_layers = num_adapter_layers
         self.adapter_stride = adapter_stride
