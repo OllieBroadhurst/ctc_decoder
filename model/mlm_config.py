@@ -72,7 +72,7 @@ class CTCDecoderConfig(PretrainedConfig):
         qa_dropout=0.1,
         seq_classif_dropout=0.2,
         pad_token_id=0,
-        decoder_vocab_size=4096,
+        decoder_vocab_size=32,
         output_hidden_size=768,
         num_adapter_layers=2,
         adapter_stride=2,
