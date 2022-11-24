@@ -1,10 +1,10 @@
-from typing import Optional, Tuple, Union
+from typing import Optional
 
 import torch
 from torch import nn
 
 from transformers.modeling_utils import PreTrainedModel
-from transformers.modeling_outputs import MaskedLMOutput
+from transformers.modeling_outputs import BaseModelOutput
 
 class W2V2RobertaForCTC(PreTrainedModel):
     def __init__(self, config, encoder=None, decoder=None):
@@ -30,7 +30,7 @@ class W2V2RobertaForCTC(PreTrainedModel):
         return_dict: Optional[bool] = None,
         labels: Optional[torch.Tensor] = None):
 
-        encoder_hidden_states = self.encoder(input_values,
+        encoder_outputs = self.encoder(input_values,
                 attention_mask=attention_mask,
                 output_attentions=output_attentions,
                 output_hidden_states=output_hidden_states,
@@ -40,7 +40,12 @@ class W2V2RobertaForCTC(PreTrainedModel):
             self.encoder_output_dim != self.decoder.config.hidden_size
             and self.decoder.config.cross_attention_hidden_size is None
         ):
-            encoder_hidden_states = self.enc_to_dec_proj(encoder_hidden_states)
+            encoder_outputs = self.enc_to_dec_proj(encoder_outputs)
+
+        if isinstance(encoder_outputs, tuple):
+            encoder_outputs = BaseModelOutput(*encoder_outputs)
+
+        encoder_hidden_states = encoder_outputs[0]
 
         decoder_outputs = self.decoder(inputs_embeds=encoder_hidden_states,
                                        labels=labels,
