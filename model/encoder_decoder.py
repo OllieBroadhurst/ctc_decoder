@@ -59,4 +59,3 @@ class W2V2RobertaForCTC(PreTrainedModel):
         """
         self.encoder.freeze_feature_encoder()
 
-
