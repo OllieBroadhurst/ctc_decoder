@@ -3,12 +3,21 @@ from typing import Optional
 import torch
 from torch import nn
 
+from transformers import AutoModel
 from transformers.modeling_utils import PreTrainedModel
 from transformers.modeling_outputs import BaseModelOutput
 
+from .mlm_model import RobertaForCTCDecoding
+
 class W2V2RobertaForCTC(PreTrainedModel):
     def __init__(self, config, encoder=None, decoder=None):
-        super().__init__(config)
+        super(W2V2RobertaForCTC).__init__(config)
+
+        if encoder is None:
+            encoder = AutoModel.from_config(config.encoder)
+
+        if decoder is None:
+            decoder = RobertaForCTCDecoding.from_config(config.decoder)
 
         self.encoder = encoder
         self.decoder = decoder
