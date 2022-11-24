@@ -115,10 +115,10 @@ class RobertaForCTCDecoding(RobertaPreTrainedModel):
             if labels.max() >= self.config.decoder_vocab_size:
                     raise ValueError(f"Label values must be <= vocab_size: {self.config.decoder_vocab_size}")
             
-            inputs = input_ids if inputs_embeds is None else inputs_embeds
+            input_shape = input_ids.shape if inputs_embeds is None else inputs_embeds.argmax(-1).shape
 
             attention_mask = (
-                attention_mask if attention_mask is not None else torch.ones_like(inputs, dtype=torch.long)
+                attention_mask if attention_mask is not None else torch.ones(input_shape, dtype=torch.long)
             )
 
             input_lengths = attention_mask.sum(-1)
