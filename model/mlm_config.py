@@ -34,6 +34,7 @@ class CTCDecoderConfig(BertConfig):
                 adapter_kernel_size=3,
                 ctc_loss_reduction="mean",
                 ctc_zero_infinity=True,
+                is_decoder=False,
                 **kwargs):
         """Constructs RobertaConfig."""
         self.layerdrop = layerdrop
@@ -43,5 +44,6 @@ class CTCDecoderConfig(BertConfig):
         self.adapter_kernel_size = adapter_kernel_size
         self.ctc_loss_reduction = ctc_loss_reduction
         self.ctc_zero_infinity = ctc_zero_infinity
+        self.is_decoder = False
         super().__init__(pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id, **kwargs)
         self.output_hidden_size = self.output_hidden_size = output_hidden_size or self.hidden_size
