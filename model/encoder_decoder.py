@@ -1,13 +1,16 @@
 from typing import Optional, Tuple, Union
 
 import torch
+from torch import nn
 
 from transformers.modeling_utils import PreTrainedModel
 from transformers.modeling_outputs import MaskedLMOutput
 
 class W2V2RobertaForCTC(PreTrainedModel):
     def __init__(self, encoder, decoder):
+
         self.encoder = encoder
+        self.decoder = decoder
 
         self.encoder_output_dim = getattr(encoder.config, "output_hidden_size", encoder.config.hidden_size)
         if (
@@ -17,8 +20,7 @@ class W2V2RobertaForCTC(PreTrainedModel):
             # encoder outputs might need to be projected to different dimension for decoder
             self.enc_to_dec_proj = nn.Linear(self.encoder.config.hidden_size, self.decoder.config.hidden_size)
 
-        self.decoder = decoder
-
+        
     def forward(self,
         input_values: Optional[torch.Tensor],
         attention_mask: Optional[torch.Tensor] = None,
