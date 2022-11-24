@@ -54,3 +54,7 @@ class W2V2RobertaForCTC(PreTrainedModel):
         return decoder_outputs
 
 
+    def from_pretrained(cls, *args, **kwargs):
+        return super().from_pretrained(*args, **kwargs)
+
+
