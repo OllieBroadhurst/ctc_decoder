@@ -8,7 +8,7 @@ from transformers.modeling_outputs import MaskedLMOutput
 
 class W2V2RobertaForCTC(PreTrainedModel):
     def __init__(self, encoder, decoder):
-        super(W2V2RobertaForCTC, self).__init__()
+        super(W2V2RobertaForCTC, self).__init__(encoder, decoder)
 
         self.encoder = encoder
         self.decoder = decoder
