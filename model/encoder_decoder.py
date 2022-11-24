@@ -65,5 +65,13 @@ class W2V2RobertaForCTC(PreTrainedModel):
                                        return_dict=return_dict)
 
         return decoder_outputs
+        
+
+    def freeze_feature_encoder(self):
+        """
+        Calling this function will disable the gradient computation for the feature encoder of the speech encoder so
+        that its parameters will not be updated during training.
+        """
+        self.encoder.freeze_feature_encoder()
 
 
