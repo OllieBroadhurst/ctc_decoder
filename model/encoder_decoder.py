@@ -75,6 +75,10 @@ class W2V2RobertaForCTC(PreTrainedModel):
 
 
     def _init_weights(self, module):
-        super()._init_weights(module)
+        """Initialize the weights"""
+        if isinstance(module, nn.Linear):
+            module.weight.data.normal_(mean=0.0, std=self.config.initializer_range)
+            if module.bias is not None:
+                module.bias.data.zero_()
 
 
