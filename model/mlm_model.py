@@ -66,6 +66,10 @@ class RobertaForCTCDecoding(RobertaPreTrainedModel):
     def set_output_embeddings(self, new_embeddings):
         self.lm_head.decoder = new_embeddings
 
+    def _init_weights(self):
+        self.encoder.init_weights
+        self.decoder.init_weights
+
     def forward(
         self,
         input_ids: Optional[torch.LongTensor] = None,
