@@ -26,14 +26,6 @@ class W2V2RobertaForCTC(PreTrainedModel):
         self.encoder = encoder
         self.decoder = decoder
 
-        self.encoder_output_dim = getattr(encoder.config, "output_hidden_size", encoder.config.hidden_size)
-        if (
-            self.encoder_output_dim != self.decoder.config.hidden_size
-            and self.decoder.config.cross_attention_hidden_size is None
-        ):
-            # encoder outputs might need to be projected to different dimension for decoder
-            self.enc_to_dec_proj = nn.Linear(self.encoder.config.hidden_size, self.decoder.config.hidden_size)
-
         
     def forward(self,
         input_values: Optional[torch.Tensor],
@@ -48,12 +40,6 @@ class W2V2RobertaForCTC(PreTrainedModel):
                 output_attentions=output_attentions,
                 output_hidden_states=output_hidden_states,
                 return_dict=return_dict)
-
-        if (
-            self.encoder_output_dim != self.decoder.config.hidden_size
-            and self.decoder.config.cross_attention_hidden_size is None
-        ):
-            encoder_outputs = self.enc_to_dec_proj(encoder_outputs)
 
         if isinstance(encoder_outputs, tuple):
             encoder_outputs = BaseModelOutput(*encoder_outputs)
@@ -72,13 +58,5 @@ class W2V2RobertaForCTC(PreTrainedModel):
         that its parameters will not be updated during training.
         """
         self.encoder.freeze_feature_encoder()
-
-
-    def _init_weights(self, module):
-        """Initialize the weights"""
-        if isinstance(module, nn.Linear):
-            module.weight.data.normal_(mean=0.0, std=self.config.initializer_range)
-            if module.bias is not None:
-                module.bias.data.zero_()
 
 
