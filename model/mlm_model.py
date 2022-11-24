@@ -51,7 +51,7 @@ class RobertaForCTCDecoding(RobertaPreTrainedModel):
             )
 
         self.roberta = RobertaModel(config, add_pooling_layer=False)
-        self.adapter = Wav2Vec2Adapter(config)
+        # self.adapter = Wav2Vec2Adapter(config)
         self.lm_head = RobertaCTCLMHead(config)
 
         # The LM head weights require special treatment only when they are tied with the word embeddings
@@ -110,8 +110,8 @@ class RobertaForCTCDecoding(RobertaPreTrainedModel):
         )
         sequence_output = outputs[0]
 
-        down_proj = self.adapter(sequence_output)
-        prediction_scores = self.lm_head(down_proj)
+        # down_proj = self.adapter(sequence_output)
+        prediction_scores = self.lm_head(sequence_output)
 
         ctc_loss = None
         if labels is not None:

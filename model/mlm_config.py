@@ -27,25 +27,25 @@ class CTCDecoderConfig(BertConfig):
                 bos_token_id=0, 
                 eos_token_id=2,
                 layerdrop=0.1,
-                decoder_vocab_size=32,
-                output_hidden_size=None,
-                num_adapter_layers=2,
-                adapter_stride=2,
-                adapter_kernel_size=3,
+                # decoder_vocab_size=32,
+                # output_hidden_size=None,
+                # num_adapter_layers=2,
+                # adapter_stride=2,
+                # adapter_kernel_size=3,
                 ctc_loss_reduction="mean",
                 ctc_zero_infinity=True,
                 is_decoder=False,
-                add_cross_attention =False,
+                add_cross_attention=False,
                 **kwargs):
         """Constructs RobertaConfig."""
         self.layerdrop = layerdrop
-        self.decoder_vocab_size = decoder_vocab_size        
-        self.num_adapter_layers = num_adapter_layers
-        self.adapter_stride = adapter_stride
-        self.adapter_kernel_size = adapter_kernel_size
+        # self.decoder_vocab_size = decoder_vocab_size        
+        # self.num_adapter_layers = num_adapter_layers
+        # self.adapter_stride = adapter_stride
+        # self.adapter_kernel_size = adapter_kernel_size
         self.ctc_loss_reduction = ctc_loss_reduction
         self.ctc_zero_infinity = ctc_zero_infinity
         self.is_decoder = is_decoder
         self.add_cross_attention = add_cross_attention 
         super().__init__(pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id, **kwargs)
-        self.output_hidden_size = self.output_hidden_size = output_hidden_size or self.hidden_size
+        # self.output_hidden_size = self.output_hidden_size = output_hidden_size or self.hidden_size
