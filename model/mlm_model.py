@@ -158,5 +158,5 @@ class RobertaForCTCDecoding(RobertaPreTrainedModel):
         )
 
     @classmethod
-    def _from_config(cls, config, **kwargs):
+    def from_config(cls, config, **kwargs):
         return cls(config, **kwargs)
