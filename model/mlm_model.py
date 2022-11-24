@@ -156,3 +156,7 @@ class RobertaForCTCDecoding(RobertaPreTrainedModel):
             hidden_states=outputs.hidden_states,
             attentions=outputs.attentions,
         )
+
+    @classmethod
+    def _from_config(cls, config, **kwargs):
+        return cls(config, **kwargs)
