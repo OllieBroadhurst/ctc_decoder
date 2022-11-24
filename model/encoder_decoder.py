@@ -74,3 +74,7 @@ class W2V2RobertaForCTC(PreTrainedModel):
         self.encoder.freeze_feature_encoder()
 
 
+    def _init_weights(self, module):
+        super()._init_weights(module)
+
+
