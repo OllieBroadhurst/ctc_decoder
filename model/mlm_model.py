@@ -6,7 +6,7 @@ from torch.nn.functional import gelu
 
 from transformers import RobertaModel
 from transformers.utils import logging
-from transformers.models.roberta.modeling_roberta import RobertaPreTrainedModel, RobertaLMHead
+from transformers.models.roberta.modeling_roberta import RobertaPreTrainedModel
 from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2Adapter
 from transformers.modeling_outputs import MaskedLMOutput
 
@@ -114,9 +114,11 @@ class RobertaForCTCDecoding(RobertaPreTrainedModel):
 
             if labels.max() >= self.config.decoder_vocab_size:
                     raise ValueError(f"Label values must be <= vocab_size: {self.config.decoder_vocab_size}")
+            
+            inputs = input_ids if inputs_embeds is None else inputs_embeds
 
             attention_mask = (
-                attention_mask if attention_mask is not None else torch.ones_like(input_ids, dtype=torch.long)
+                attention_mask if attention_mask is not None else torch.ones_like(inputs, dtype=torch.long)
             )
 
             input_lengths = attention_mask.sum(-1)
