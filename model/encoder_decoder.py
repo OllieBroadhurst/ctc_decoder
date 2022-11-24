@@ -3,13 +3,17 @@ from typing import Optional
 import torch
 from torch import nn
 
-from transformers import AutoModel
+from transformers import AutoModel, SpeechEncoderDecoderConfig
 from transformers.modeling_utils import PreTrainedModel
 from transformers.modeling_outputs import BaseModelOutput
 
 from .mlm_model import RobertaForCTCDecoding
 
 class W2V2RobertaForCTC(PreTrainedModel):
+    
+    config_class = SpeechEncoderDecoderConfig
+    base_model_prefix = "speech_encoder_decoder"
+
     def __init__(self, config, encoder=None, decoder=None):
         super(W2V2RobertaForCTC).__init__(config)
 
