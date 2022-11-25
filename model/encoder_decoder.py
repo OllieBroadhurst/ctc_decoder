@@ -35,8 +35,6 @@ class W2V2RobertaForCTC(PreTrainedModel):
         return_dict: Optional[bool] = None,
         labels: Optional[torch.Tensor] = None):
 
-        print(f"Predicted output sequence length: {input_values.shape[1]/self.encoder.config.inputs_to_logits_ratio/4}")
-
         encoder_outputs = self.encoder(input_values,
                 attention_mask=attention_mask,
                 output_attentions=output_attentions,
@@ -48,10 +46,10 @@ class W2V2RobertaForCTC(PreTrainedModel):
 
         encoder_hidden_states = encoder_outputs[0]
 
-        if encoder_hidden_states.shape[1] > 512:
-            print(f"Sequence length is {encoder_hidden_states.shape[1]} for audio that's {input_values.shape[1]/16000}s long.")
-            print(encoder_hidden_states)
-            print(encoder_hidden_states.shape)
+        # if encoder_hidden_states.shape[1] > 512:
+        #     print(f"Sequence length is {encoder_hidden_states.shape[1]} for audio that's {input_values.shape[1]/16000}s long.")
+        #     print(encoder_hidden_states)
+        #     print(encoder_hidden_states.shape)
 
         decoder_outputs = self.decoder(inputs_embeds=encoder_hidden_states,                                       
                                        labels=labels,
