@@ -48,11 +48,12 @@ class W2V2RobertaForCTC(PreTrainedModel):
 
         encoder_hidden_states = encoder_outputs[0]
 
-        print(f"Actual output sequence length: {encoder_hidden_states.shape[1]}")
+        if encoder_hidden_states.shape[1] < 512:
+            print(f"Sequence length is {encoder_hidden_states.shape[1]} for audio that's {input_values.shape[1]/16000}s long.")
+            print(encoder_hidden_states)
+            print(encoder_hidden_states.shape)
 
-        assert encoder_hidden_states.shape[1] < 512, f"Sequence length is {encoder_hidden_states.shape[1]} for audio that's {input_values.shape[1]/16000}s long."
-
-        decoder_outputs = self.decoder(inputs_embeds=encoder_hidden_states,
+        decoder_outputs = self.decoder(inputs_embeds=encoder_hidden_states,                                       
                                        labels=labels,
                                        return_dict=return_dict)
 
