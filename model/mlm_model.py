@@ -7,7 +7,6 @@ from torch.nn.functional import gelu
 from transformers import RobertaModel
 from transformers.utils import logging
 from transformers.models.roberta.modeling_roberta import RobertaPreTrainedModel
-from transformers.models.wav2vec2.modeling_wav2vec2 import Wav2Vec2Adapter
 from transformers.modeling_outputs import MaskedLMOutput
 
 
@@ -19,11 +18,11 @@ class RobertaCTCLMHead(nn.Module):
 
     def __init__(self, config):
         super().__init__()
-        self.dense = nn.Linear(config.output_hidden_size, config.output_hidden_size)
-        self.layer_norm = nn.LayerNorm(config.output_hidden_size, eps=config.layer_norm_eps)
+        self.dense = nn.Linear(config.hidden_size, config.hidden_size)
+        self.layer_norm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
 
-        self.decoder = nn.Linear(config.output_hidden_size, config.decoder_vocab_size)
-        self.bias = nn.Parameter(torch.zeros(config.decoder_vocab_size))
+        self.decoder = nn.Linear(config.hidden_size, config.vocab_size)
+        self.bias = nn.Parameter(torch.zeros(config.vocab_size))
         self.decoder.bias = self.bias
 
     def forward(self, features, **kwargs):
@@ -112,8 +111,8 @@ class RobertaForCTCDecoding(RobertaPreTrainedModel):
         ctc_loss = None
         if labels is not None:
 
-            if labels.max() >= self.config.decoder_vocab_size:
-                    raise ValueError(f"Label values must be <= vocab_size: {self.config.decoder_vocab_size}")
+            if labels.max() >= self.config.vocab_size:
+                    raise ValueError(f"Label values must be <= vocab_size: {self.config.vocab_size}")
             
             input_shape = input_ids.shape if inputs_embeds is None else inputs_embeds.argmax(-1).shape
 
