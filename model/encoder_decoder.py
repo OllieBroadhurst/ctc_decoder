@@ -3,11 +3,19 @@ from typing import Optional
 import torch
 from torch import nn
 
-from transformers import AutoModel, SpeechEncoderDecoderConfig
+from transformers import AutoModel, SpeechEncoderDecoderConfig, Wav2Vec2Processor
 from transformers.modeling_utils import PreTrainedModel
 from transformers.modeling_outputs import BaseModelOutput
 
 from .mlm_model import RobertaForCTCDecoding
+
+class CustomMLMProcessor(Wav2Vec2Processor):
+    
+    feature_extractor_class = "Wav2Vec2FeatureExtractor"
+    tokenizer_class = "RobertaTokenizer"
+    
+    def __init__(self, feature_extractor, tokenizer):
+        super().__init__(feature_extractor, tokenizer)
 
 class W2V2RobertaForCTC(PreTrainedModel):
 
