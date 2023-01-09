@@ -3,7 +3,7 @@ from typing import Optional
 import torch
 from torch import nn
 
-from transformers import AutoModel, SpeechEncoderDecoderConfig, Wav2Vec2Processor
+from transformers import AutoModelForCTC, SpeechEncoderDecoderConfig, Wav2Vec2Processor
 from transformers.modeling_utils import PreTrainedModel
 from transformers.modeling_outputs import BaseModelOutput
 
@@ -26,7 +26,7 @@ class W2V2RobertaForCTC(PreTrainedModel):
         super().__init__(config)
 
         if encoder is None:
-            encoder = AutoModel.from_config(config.encoder)
+            encoder = AutoModelForCTC.from_config(config.encoder)
 
         if decoder is None:
             decoder = RobertaForCTCDecoding.from_config(config.decoder)
@@ -49,12 +49,16 @@ class W2V2RobertaForCTC(PreTrainedModel):
                 output_hidden_states=output_hidden_states,
                 return_dict=return_dict)
 
+
         if isinstance(encoder_outputs, tuple):
-            encoder_outputs = BaseModelOutput(*encoder_outputs)
+            if labels is not None:
+                encoder_outputs = encoder_outputs[0]
+            else:
+                encoder_outputs = encoder_outputs[1]
+        else:
+            encoder_outputs = encoder_outputs.logits
 
-        encoder_hidden_states = encoder_outputs[0]
-
-        decoder_outputs = self.decoder(inputs_embeds=encoder_hidden_states,                                       
+        decoder_outputs = self.decoder(inputs_embeds=encoder_outputs,                                       
                                        labels=labels,
                                        return_dict=return_dict)
 
