@@ -47,9 +47,14 @@ class W2V2RobertaForCTC(PreTrainedModel):
                 attention_mask=attention_mask,
                 output_attentions=output_attentions,
                 output_hidden_states=output_hidden_states,
-                return_dict=return_dict)
+                return_dict=False)
 
-        decoder_outputs = self.decoder(inputs_embeds=encoder_outputs,                                       
+        if labels is not None:
+            decoder_inputs = encoder_outputs[1]
+        else:
+            decoder_inputs = encoder_outputs[0]
+
+        decoder_outputs = self.decoder(inputs_embeds=decoder_inputs,                                       
                                        labels=labels,
                                        return_dict=return_dict)
 
