@@ -64,14 +64,14 @@ class W2V2RobertaForCTC(PreTrainedModel):
 
         if labels is not None:
             loss = decoder_outputs[0] * 0.8 + encoder_loss * 0.2
-            decoder_output = decoder_outputs[1:]
+            decoder_outputs = decoder_outputs[1:]
 
         if not return_dict:
-            return ((loss,) + decoder_output) if loss is not None else decoder_output
+            return ((loss,) + decoder_outputs) if loss is not None else decoder_outputs
 
         return MaskedLMOutput(
             loss=loss,
-            logits=decoder_output[1],
+            logits=decoder_outputs[1] if loss is not None else decoder_outputs[0],
             hidden_states=None,
             attentions=None,
         )
