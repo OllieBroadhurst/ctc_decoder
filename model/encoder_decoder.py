@@ -4,7 +4,7 @@ import torch
 
 from transformers import AutoModelForCTC, SpeechEncoderDecoderConfig, Wav2Vec2Processor
 from transformers.modeling_utils import PreTrainedModel
-from transformers.modeling_outputs import CausalLMOutput
+from transformers.modeling_outputs import MaskedLMOutput
 from transformers.models.wav2vec2.modeling_wav2vec2 import _HIDDEN_STATES_START_POSITION
 
 from .mlm_model import RobertaForCTCDecoding
@@ -47,19 +47,35 @@ class W2V2RobertaForCTC(PreTrainedModel):
                 attention_mask=attention_mask,
                 output_attentions=output_attentions,
                 output_hidden_states=output_hidden_states,
-                return_dict=False)
+                return_dict=False,
+                labels=labels)
+
+        loss = None
 
         if labels is not None:
-            print(encoder_outputs)
+            encoder_loss = encoder_outputs[0]
             decoder_inputs = encoder_outputs[1]
         else:
             decoder_inputs = encoder_outputs[0]
 
         decoder_outputs = self.decoder(inputs_embeds=decoder_inputs,                                       
                                        labels=labels,
-                                       return_dict=return_dict)
+                                       return_dict=False)
 
-        return decoder_outputs
+        if labels is not None:
+            loss = decoder_outputs[0] * 0.8 + encoder_loss * 0.2
+            decoder_output = decoder_outputs[1:]
+
+        if not return_dict:
+            return ((loss,) + decoder_output) if loss is not None else decoder_output
+
+        return MaskedLMOutput(
+            loss=loss,
+            logits=decoder_output[1],
+            hidden_states=None,
+            attentions=None,
+        )
+
         
     def freeze_feature_encoder(self):
         """
