@@ -50,6 +50,7 @@ class W2V2RobertaForCTC(PreTrainedModel):
                 return_dict=False)
 
         if labels is not None:
+            print(encoder_outputs)
             decoder_inputs = encoder_outputs[1]
         else:
             decoder_inputs = encoder_outputs[0]
